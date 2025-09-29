@@ -1,10 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
     <title>podbreaf</title>
+    <script>
+      (function () {
+        var storageKey = "vite-ui-theme";
+        var root = document.documentElement;
+        try {
+          var storedTheme = localStorage.getItem(storageKey);
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme =
+            storedTheme === "dark" || storedTheme === "light"
+              ? storedTheme
+              : prefersDark
+              ? "dark"
+              : "light";
+          root.classList.remove("light", "dark");
+          root.classList.add(theme);
+        } catch (_) {
+          // If accessing localStorage fails, fall back to system preference
+          var prefersDarkFallback =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          root.classList.remove("light", "dark");
+          root.classList.add(prefersDarkFallback ? "dark" : "light");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
