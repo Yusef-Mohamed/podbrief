@@ -14,6 +14,7 @@ function App() {
         <Toaster position="top-center" duration={3000} richColors />
         <Router>
           <Routes>
+            {/* <Route path="/" element={<Home />} /> */}
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/signin" element={<SignIn />} />
