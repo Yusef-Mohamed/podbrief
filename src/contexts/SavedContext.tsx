@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import type { PodcastEpisode, PodcastFeed } from "@/types/podcast";
+import { useAuth } from "@/hooks/useAuth";
 
 type SavedState = {
   episodes: PodcastEpisode[];
@@ -32,34 +33,49 @@ export const SavedProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
   const [podcasts, setPodcasts] = useState<PodcastFeed[]>([]);
+  const { user } = useAuth();
+  const email = user?.email ?? null;
+  const [storageKey, setStorageKey] = useState<string>(STORAGE_KEY);
   const didHydrateRef = useRef(false);
 
-  // Hydrate from localStorage once
+  // Compute storage key from current user email
   useEffect(() => {
+    const key = email ? `${STORAGE_KEY}:${email.toLowerCase()}` : STORAGE_KEY;
+    setStorageKey(key);
+  }, [email]);
+
+  // Hydrate from localStorage whenever storageKey changes (on first load and when user switches)
+  useEffect(() => {
+    didHydrateRef.current = false;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(storageKey);
       if (raw) {
         const parsed = JSON.parse(raw) as SavedState;
         setEpisodes(Array.isArray(parsed.episodes) ? parsed.episodes : []);
         setPodcasts(Array.isArray(parsed.podcasts) ? parsed.podcasts : []);
+      } else {
+        setEpisodes([]);
+        setPodcasts([]);
       }
     } catch {
       // ignore invalid localStorage
+      setEpisodes([]);
+      setPodcasts([]);
     } finally {
       didHydrateRef.current = true;
     }
-  }, []);
+  }, [storageKey]);
 
   // Persist to localStorage when either list changes post-hydration
   useEffect(() => {
     if (!didHydrateRef.current) return;
     const nextState: SavedState = { episodes, podcasts };
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+      localStorage.setItem(storageKey, JSON.stringify(nextState));
     } catch {
       // ignore quota or access errors
     }
-  }, [episodes, podcasts]);
+  }, [episodes, podcasts, storageKey]);
 
   const isEpisodeSaved = useCallback(
     (episodeId: number | string | undefined) => {
@@ -121,6 +137,7 @@ export const SavedProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSaved() {
   const ctx = useContext(SavedContext);
   if (!ctx) throw new Error("useSaved must be used within SavedProvider");

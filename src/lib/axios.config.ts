@@ -14,10 +14,11 @@ export const apiClient: AxiosInstance = axios.create({
 // Attach Authorization header from localStorage if token exists
 apiClient.interceptors.request.use((config) => {
   try {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const auth = localStorage.getItem("podbreaf_auth");
+    const authData = auth ? JSON.parse(auth) : null;
+    if (authData) {
       config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${authData.token}`;
       console.log("Token added to request:", config.url);
     } else {
       console.log("No auth data found in localStorage");

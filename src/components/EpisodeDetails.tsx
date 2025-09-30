@@ -9,6 +9,7 @@ import { Play } from "lucide-react";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { useSaved } from "@/contexts/SavedContext";
 import { toast } from "sonner";
+import { useSummarize } from "@/hooks/useSummarize";
 
 const EpisodeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +18,7 @@ const EpisodeDetails: React.FC = () => {
   const { playEpisode } = usePlayer();
   const { isEpisodeSaved, toggleEpisode } = useSaved();
   const [summaryVisibleCount, setSummaryVisibleCount] = useState<number>(3);
+  const { bullets, isSummarizing, startSummarizing } = useSummarize(episode);
 
   useEffect(() => {
     if (!id) return;
@@ -62,26 +64,7 @@ const EpisodeDetails: React.FC = () => {
     toast.success(wasSaved ? "Episode removed from saved" : "Episode saved");
   };
 
-  // const summaryBullets = useMemo(() => {
-  //   if (!episode?.description) return [] as string[];
-  //   // Strip basic HTML tags and split into bullet-like sentences
-  //   const text = episode.description
-  //     .replace(/<[^>]*>/g, " ")
-  //     .replace(/&nbsp;|&amp;|&quot;|&#39;/g, " ")
-  //     .replace(/\s+/g, " ")
-  //     .trim();
-  //   const sentences = text.split(/[.;]\s+/).filter((s) => s.length > 8);
-  //   return sentences.slice(0, 6);
-  // }, [episode?.description]);
-
-  // Dummy summary bullets (temporary)
-  const dummyBullets: string[] = [
-    "This is a placeholder summary for the episode.",
-    "Second bullet with dummy highlight text.",
-    "Third item summarizing key point while real summary is hidden.",
-    "Fourth placeholder detail expanding on the discussion topic.",
-    "Fifth note offering another highlight from the episode.",
-  ];
+  const hasSummary = bullets.length > 0;
 
   return (
     <MainLayout>
@@ -119,6 +102,30 @@ const EpisodeDetails: React.FC = () => {
                   </>
                 )}
               </div>
+              <div className="flex items-center gap-2 mt-4">
+                <Button
+                  onClick={handlePlayEpisode}
+                  disabled={!episode?.enclosureUrl}
+                  size="lg"
+                  className="gap-2 w-64 rounded-full"
+                >
+                  <Play className="h-4 w-4" />
+                  {episode?.enclosureUrl
+                    ? "Play Episode"
+                    : "Episode not available"}
+                </Button>{" "}
+                <Button
+                  onClick={handleToggleSave}
+                  disabled={!episode}
+                  size="lg"
+                  variant="secondary"
+                  className="gap-2 w-64 rounded-full"
+                >
+                  {episode && isEpisodeSaved(episode.id)
+                    ? "Unsave Episode"
+                    : "Save Episode"}
+                </Button>{" "}
+              </div>
             </div>
           </div>
         </div>
@@ -137,67 +144,39 @@ const EpisodeDetails: React.FC = () => {
               </div>
             ) : (
               <>
-                <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
-                  {dummyBullets
-                    .slice(0, summaryVisibleCount)
-                    .map((line, idx) => (
-                      <li key={idx}>{line}</li>
-                    ))}
-                </ul>
-                {summaryVisibleCount < Math.min(5, dummyBullets.length) && (
-                  <button
-                    className="mt-2 text-xs underline text-muted-foreground"
-                    onClick={() => setSummaryVisibleCount(5)}
-                  >
-                    See more
-                  </button>
+                {hasSummary ? (
+                  <>
+                    <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
+                      {bullets
+                        .slice(0, summaryVisibleCount)
+                        .map((line, idx) => (
+                          <li key={idx}>{line}</li>
+                        ))}
+                    </ul>
+                    {summaryVisibleCount < Math.min(6, bullets.length) && (
+                      <button
+                        className="mt-2 text-xs underline text-muted-foreground"
+                        onClick={() => setSummaryVisibleCount(6)}
+                      >
+                        See more
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-sm text-muted-foreground italic">
+                    No summary available for this episode
+                    <button
+                      onClick={startSummarizing}
+                      disabled={isSummarizing}
+                      className="ml-1 underline"
+                    >
+                      {isSummarizing ? "Generating..." : "Click to generate"}
+                    </button>
+                  </div>
                 )}
-                {/**
-                 * Original summary rendering (hidden for now):
-                 * <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
-                 *   {summaryBullets.length > 0 ? (
-                 *     summaryBullets.map((line, idx) => <li key={idx}>{line}</li>)
-                 *   ) : (
-                 *     <li>No summary available for this episode.</li>
-                 *   )}
-                 * </ul>
-                 */}
               </>
             )}
           </div>
-
-          {/* Play Button under description */}
-          <div className="px-6 pb-6 sm:px-8 sm:pb-8">
-            <Button
-              onClick={handlePlayEpisode}
-              disabled={!episode?.enclosureUrl}
-              className="w-full gap-2"
-            >
-              <Play className="h-4 w-4" />
-              {episode?.enclosureUrl ? "Play Episode" : "Episode not available"}
-            </Button>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-3">
-          <Button
-            className="gap-2"
-            onClick={handleToggleSave}
-            disabled={!episode}
-          >
-            {episode && isEpisodeSaved(episode.id)
-              ? "Unsave Episode"
-              : "Save Episode"}
-          </Button>
-          <Button variant="outline" className="gap-2">
-            Share
-          </Button>
-          {episode?.link ? (
-            <a href={episode.link} target="_blank" rel="noreferrer">
-              <Button variant="ghost">Open Episode Page</Button>
-            </a>
-          ) : null}
         </div>
       </div>
     </MainLayout>
