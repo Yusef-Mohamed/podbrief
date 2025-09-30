@@ -1,7 +1,7 @@
 import React from "react";
 import MainLayout from "./layout/MainLayout";
 import LatestEpisodesSpread from "./home/LatestEpisodesSpread";
-import Top5PicksSpread from "./home/Top5PicksSpread";
+import Top5EpisodesSpread from "./home/Top5EpisodesSpread";
 
 const HomePage: React.FC = () => {
   return (
@@ -13,9 +13,8 @@ const HomePage: React.FC = () => {
 
         <div className="space-y-4 w-64 ">
           <h3 className="text-xl font-bold">Top 5 Picks</h3>
-          <Top5PicksSpread
+          <Top5EpisodesSpread
             selectedCategory="all"
-            showPagination={false}
             pageSize={5}
             title=""
             gridClassName="grid-cols-1"
