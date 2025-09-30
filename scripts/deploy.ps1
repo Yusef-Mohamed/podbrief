@@ -1,11 +1,11 @@
-$ErrorActionPreference = 'Stop'
-
 param(
   [switch]$SkipBuild
 )
 
-# Resolve repo root when run from anywhere inside repo
-$repoRoot = (Resolve-Path "$PSScriptRoot/.." ).Path
+$ErrorActionPreference = 'Stop'
+
+# Resolve repo root (parent of the 'podbreaf' folder)
+$repoRoot = (Resolve-Path "$PSScriptRoot/../.." ).Path
 $projRoot = Join-Path $repoRoot "."
 $deployCfgPath = Join-Path $repoRoot "deploy.config.local.json"
 

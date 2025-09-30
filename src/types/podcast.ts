@@ -123,3 +123,26 @@ export type EpisodeDetailsResponse = {
   id: string;
   description: string;
 };
+
+// Subscriptions types
+export type UserSubscription = {
+  podcastId: number;
+  title: string;
+  description: string;
+  author: string;
+  imageUrl: string;
+  subscribedAt: string; // ISO date string
+  summarizedEpisodesCount: number;
+};
+
+export type SubscriptionsResponse = {
+  subscriptions: UserSubscription[];
+  pagination: {
+    page: number;
+    limit: number;
+    total_count: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+};

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import MainLayout from "./layout/MainLayout";
 import type {
   PodcastFeed,
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFollowed } from "@/hooks/useFollowed";
+import EpisodeCard from "./home/EpisodeCard";
 
 const PodcastDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -146,25 +147,7 @@ const PodcastDetails: React.FC = () => {
           </div>
         ) : (
           episodes.map((ep, idx) => (
-            <Link
-              key={`${ep.id ?? idx}`}
-              to={`/episode/${ep.id ?? ""}`}
-              className="rounded-xl border bg-card p-4 block hover:bg-accent/40 transition-colors"
-            >
-              <div className="text-sm text-muted-foreground">
-                {ep.datePublished
-                  ? new Date(ep.datePublished * 1000).toLocaleDateString()
-                  : ""}
-                {ep.duration ? ` • ${ep.duration} min` : ""}
-              </div>
-              <div className="font-medium">
-                {ep.title || "Untitled episode"}
-              </div>
-              <div
-                dangerouslySetInnerHTML={{ __html: ep.description || "" }}
-                className="text-sm text-muted-foreground line-clamp-1"
-              />
-            </Link>
+            <EpisodeCard key={`${ep.id ?? idx}`} episode={ep} />
           ))
         )}
       </div>

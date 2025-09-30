@@ -5,7 +5,11 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type { PodcastFeed } from "@/types/podcast";
+import type {
+  PodcastFeed,
+  SubscriptionsResponse,
+  UserSubscription,
+} from "@/types/podcast";
 import { apiClient } from "@/lib/axios.config";
 
 type FollowedContextValue = {
@@ -17,6 +21,7 @@ type FollowedContextValue = {
   unfollow: (podcastId: number | string | undefined) => Promise<void>;
   toggleFollow: (podcast: PodcastFeed) => Promise<void>;
   refresh: () => Promise<void>;
+  subscriptions?: UserSubscription[];
 };
 
 const FollowedContext = createContext<FollowedContextValue | undefined>(
@@ -29,6 +34,9 @@ export const FollowedProvider: React.FC<{ children: React.ReactNode }> = ({
   const [followed, setFollowed] = useState<PodcastFeed[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [loadingIds, setLoadingIds] = useState<Record<string, boolean>>({});
+  const [subscriptions, setSubscriptions] = useState<
+    UserSubscription[] | undefined
+  >(undefined);
 
   const setIdLoading = (id: number | string | undefined, loading: boolean) => {
     if (id === undefined || id === null) return;
@@ -46,16 +54,53 @@ export const FollowedProvider: React.FC<{ children: React.ReactNode }> = ({
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
-      const { data } = await apiClient.get<PodcastFeed[]>(
-        "/users/me/subscriptions"
-      );
-      const list = Array.isArray(data)
-        ? data
-        : // Some APIs wrap as { items: PodcastFeed[] }
-          (data as unknown as { items?: PodcastFeed[] }).items ?? [];
-      setFollowed(list);
+      const { data } = await apiClient.get<
+        SubscriptionsResponse | PodcastFeed[] | { items?: PodcastFeed[] }
+      >("/users/me/subscriptions");
+      if ((data as SubscriptionsResponse).subscriptions) {
+        const resp = data as SubscriptionsResponse;
+        setSubscriptions(resp.subscriptions);
+        // Map to PodcastFeed-like objects for backward compatibility where possible
+        const mapped: PodcastFeed[] = resp.subscriptions.map((s) => ({
+          id: s.podcastId,
+          title: s.title,
+          url: "",
+          originalUrl: "",
+          link: "",
+          description: s.description,
+          author: s.author,
+          ownerName: s.author,
+          image: s.imageUrl,
+          artwork: s.imageUrl,
+          lastUpdateTime: 0,
+          lastCrawlTime: 0,
+          lastParseTime: 0,
+          inPollingQueue: 0,
+          priority: 0,
+          lastGoodHttpStatusTime: 0,
+          lastHttpStatus: 0,
+          contentType: "",
+          language: "",
+          type: 0,
+          dead: 0,
+          crawlErrors: 0,
+          parseErrors: 0,
+          categories: {},
+          locked: 0,
+          explicit: false,
+          podcastGuid: "",
+          medium: "podcast",
+          episodeCount: 0,
+        }));
+        setFollowed(mapped);
+      } else {
+        const list = Array.isArray(data)
+          ? (data as PodcastFeed[])
+          : (data as { items?: PodcastFeed[] }).items ?? [];
+        setFollowed(list);
+        setSubscriptions(undefined);
+      }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error("Failed to load subscriptions", error);
     } finally {
       setIsLoading(false);
@@ -79,7 +124,6 @@ export const FollowedProvider: React.FC<{ children: React.ReactNode }> = ({
         return [podcast, ...prev];
       });
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error("Failed to follow podcast", error);
       throw error;
     } finally {
@@ -96,7 +140,6 @@ export const FollowedProvider: React.FC<{ children: React.ReactNode }> = ({
         await apiClient.delete(`/users/me/subscriptions/${id}`);
         setFollowed((prev) => prev.filter((p) => String(p.id) !== id));
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error("Failed to unfollow podcast", error);
         throw error;
       } finally {
@@ -129,6 +172,7 @@ export const FollowedProvider: React.FC<{ children: React.ReactNode }> = ({
       unfollow,
       toggleFollow,
       refresh,
+      subscriptions,
     }),
     [
       followed,
@@ -139,6 +183,7 @@ export const FollowedProvider: React.FC<{ children: React.ReactNode }> = ({
       unfollow,
       toggleFollow,
       refresh,
+      subscriptions,
     ]
   );
 
