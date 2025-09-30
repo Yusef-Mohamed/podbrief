@@ -2,7 +2,7 @@ import axios, { type AxiosInstance } from "axios";
 import type { AuthState } from "@/components/auth-context";
 
 const apiBaseURL =
-  "https://5kw6e72bw2.execute-api.us-west-2.amazonaws.com/prod";
+  "https://hjtrv4juxe.execute-api.us-west-2.amazonaws.com/prod";
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: apiBaseURL,
@@ -21,12 +21,32 @@ apiClient.interceptors.request.use((config) => {
       if (token) {
         config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${token}`;
+        console.log("Token added to request:", config.url);
+      } else {
+        console.log("No token found in auth state");
       }
+    } else {
+      console.log("No auth data found in localStorage");
     }
-  } catch {
-    // Do nothing
+  } catch (error) {
+    console.error("Error parsing auth data:", error);
   }
   return config;
 });
+
+// Response interceptor to handle token expiration
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.log("Unauthorized - token may be expired");
+      // Clear invalid token
+      localStorage.removeItem("podbreaf_auth");
+      // Optionally redirect to login page
+      // window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;

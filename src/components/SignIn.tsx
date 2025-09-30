@@ -50,7 +50,6 @@ const SignIn: React.FC = () => {
         email: values.email,
         password: values.password,
       });
-      console.log("Sign in success", data);
       signIn({ token: data.token, user: data.user });
       reset();
       toast.success("Signed in successfully");

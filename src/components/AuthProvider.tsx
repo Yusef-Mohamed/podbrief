@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   AUTH_STORAGE_KEY,
   type AuthContextValue,
@@ -10,30 +10,27 @@ import {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [auth, setAuth] = useState<AuthState>({ token: null, user: null });
-
-  useEffect(() => {
+  const [auth, setAuth] = useState<AuthState>(() => {
     try {
       const raw = localStorage.getItem(AUTH_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as AuthState;
-        setAuth(parsed);
+        return { token: parsed.token ?? null, user: parsed.user ?? null };
       }
     } catch {
-      void 0;
+      // ignore
     }
-  }, []);
+    return { token: null, user: null };
+  });
 
-  useEffect(() => {
+  const signIn = useCallback((payload: { token: string; user: AuthUser }) => {
+    const nextAuth: AuthState = { token: payload.token, user: payload.user };
+    setAuth(nextAuth);
     try {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
     } catch {
       void 0;
     }
-  }, [auth]);
-
-  const signIn = useCallback((payload: { token: string; user: AuthUser }) => {
-    setAuth({ token: payload.token, user: payload.user });
   }, []);
 
   const signOut = useCallback(() => {
@@ -45,14 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  // Alias for clarity in consumers
+  const logout = useCallback(() => {
+    signOut();
+  }, [signOut]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       token: auth.token,
       user: auth.user,
       signIn,
       signOut,
+      logout,
     }),
-    [auth.token, auth.user, signIn, signOut]
+    [auth.token, auth.user, signIn, signOut, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -17,6 +17,13 @@ import apiClient from "@/lib/axios.config";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+
+type RegisterResponse = {
+  token: string;
+  user: { user_id: string; email: string };
+  message?: string;
+};
 
 const signUpSchema = z
   .object({
@@ -45,14 +52,19 @@ const SignUp: React.FC = () => {
   });
 
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const onSubmit = async (values: SignUpValues) => {
     try {
-      const { data } = await apiClient.post("/auth/register", {
-        email: values.email,
-        password: values.password,
-      });
-      console.log("Register success", data);
+      const { data } = await apiClient.post<RegisterResponse>(
+        "/auth/register",
+        {
+          email: values.email,
+          password: values.password,
+        }
+      );
+      signIn({ token: data.token, user: data.user });
+
       reset();
       toast.success("Account created successfully");
       navigate("/home");

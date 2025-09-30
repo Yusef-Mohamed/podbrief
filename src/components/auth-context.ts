@@ -13,6 +13,7 @@ export type AuthState = {
 export type AuthContextValue = AuthState & {
   signIn: (payload: { token: string; user: AuthUser }) => void;
   signOut: () => void;
+  logout: () => void;
 };
 
 export const AUTH_STORAGE_KEY = "podbreaf_auth";
