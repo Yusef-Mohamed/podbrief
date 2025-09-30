@@ -21,137 +21,146 @@ import ExplorePage from "./components/ExplorePage";
 import LibraryPage from "./components/LibraryPage";
 import { useAuth } from "./hooks/useAuth";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import { SavedProvider } from "./contexts/SavedContext";
+import { FollowedProvider } from "./contexts/FollowedContext";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <AuthProvider>
-        <PlayerProvider>
-          <Toaster position="top-center" duration={3000} richColors />
-          <HelmetProvider>
-            <Helmet>
-              <title>PodBrief</title>
-              <meta name="description" content="Discover and brief podcasts." />
-            </Helmet>
-            <Router>
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <RedirectIfAuth>
-                      <>
-                        <Meta
-                          title="PodBrief – Discover Podcasts"
-                          description="Search, explore, and play the latest podcasts and episodes."
-                        />
-                        <Home />
-                      </>
-                    </RedirectIfAuth>
-                  }
-                />
-                <Route
-                  path="/signin"
-                  element={
-                    <RedirectIfAuth>
-                      <>
-                        <Meta
-                          title="Sign in • PodBrief"
-                          description="Access your personalized podcast library and playback."
-                        />
-                        <SignIn />
-                      </>
-                    </RedirectIfAuth>
-                  }
-                />
-                <Route
-                  path="/signup"
-                  element={
-                    <RedirectIfAuth>
-                      <>
-                        <Meta
-                          title="Create account • PodBrief"
-                          description="Create your PodBrief account to save episodes and follow podcasts."
-                        />
-                        <SignUp />
-                      </>
-                    </RedirectIfAuth>
-                  }
-                />
-                <Route
-                  path="/home"
-                  element={
-                    <RequireAuth>
-                      <>
-                        <Meta
-                          title="Home • PodBrief"
-                          description="Your personalized podcast feed with latest episodes."
-                        />
-                        <HomePage />
-                      </>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/podcast/:id"
-                  element={
-                    <RequireAuth>
-                      <>
-                        <Meta
-                          title="Podcast • PodBrief"
-                          description="Podcast details, episodes, and info."
-                        />
-                        <PodcastDetails />
-                      </>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/episode/:id"
-                  element={
-                    <RequireAuth>
-                      <>
-                        <Meta
-                          title="Episode • PodBrief"
-                          description="Episode details and playback."
-                        />
-                        <EpisodeDetails />
-                      </>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/explore"
-                  element={
-                    <RequireAuth>
-                      <>
-                        <Meta
-                          title="Explore • PodBrief"
-                          description="Browse categories, trending podcasts, and episodes."
-                        />
-                        <ExplorePage />
-                      </>
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/library"
-                  element={
-                    <RequireAuth>
-                      <>
-                        <Meta
-                          title="Your Library • PodBrief"
-                          description="Saved episodes and followed podcasts."
-                        />
-                        <LibraryPage />
-                      </>
-                    </RequireAuth>
-                  }
-                />
-              </Routes>
-              <PlayerBar />
-            </Router>
-          </HelmetProvider>
-        </PlayerProvider>
+        <SavedProvider>
+          <FollowedProvider>
+            <PlayerProvider>
+              <Toaster position="top-center" duration={3000} richColors />
+              <HelmetProvider>
+                <Helmet>
+                  <title>PodBrief</title>
+                  <meta
+                    name="description"
+                    content="Discover and brief podcasts."
+                  />
+                </Helmet>
+                <Router>
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={
+                        <RedirectIfAuth>
+                          <>
+                            <Meta
+                              title="PodBrief – Discover Podcasts"
+                              description="Search, explore, and play the latest podcasts and episodes."
+                            />
+                            <Home />
+                          </>
+                        </RedirectIfAuth>
+                      }
+                    />
+                    <Route
+                      path="/signin"
+                      element={
+                        <RedirectIfAuth>
+                          <>
+                            <Meta
+                              title="Sign in • PodBrief"
+                              description="Access your personalized podcast library and playback."
+                            />
+                            <SignIn />
+                          </>
+                        </RedirectIfAuth>
+                      }
+                    />
+                    <Route
+                      path="/signup"
+                      element={
+                        <RedirectIfAuth>
+                          <>
+                            <Meta
+                              title="Create account • PodBrief"
+                              description="Create your PodBrief account to save episodes and follow podcasts."
+                            />
+                            <SignUp />
+                          </>
+                        </RedirectIfAuth>
+                      }
+                    />
+                    <Route
+                      path="/home"
+                      element={
+                        <RequireAuth>
+                          <>
+                            <Meta
+                              title="Home • PodBrief"
+                              description="Your personalized podcast feed with latest episodes."
+                            />
+                            <HomePage />
+                          </>
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/podcast/:id"
+                      element={
+                        <RequireAuth>
+                          <>
+                            <Meta
+                              title="Podcast • PodBrief"
+                              description="Podcast details, episodes, and info."
+                            />
+                            <PodcastDetails />
+                          </>
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/episode/:id"
+                      element={
+                        <RequireAuth>
+                          <>
+                            <Meta
+                              title="Episode • PodBrief"
+                              description="Episode details and playback."
+                            />
+                            <EpisodeDetails />
+                          </>
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/explore"
+                      element={
+                        <RequireAuth>
+                          <>
+                            <Meta
+                              title="Explore • PodBrief"
+                              description="Browse categories, trending podcasts, and episodes."
+                            />
+                            <ExplorePage />
+                          </>
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/library"
+                      element={
+                        <RequireAuth>
+                          <>
+                            <Meta
+                              title="Your Library • PodBrief"
+                              description="Saved episodes and followed podcasts."
+                            />
+                            <LibraryPage />
+                          </>
+                        </RequireAuth>
+                      }
+                    />
+                  </Routes>
+                  <PlayerBar />
+                </Router>
+              </HelmetProvider>
+            </PlayerProvider>
+          </FollowedProvider>
+        </SavedProvider>
       </AuthProvider>
     </ThemeProvider>
   );

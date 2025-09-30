@@ -9,7 +9,10 @@ import type {
 } from "@/types/podcast";
 import { Button } from "@/components/ui/button";
 import apiClient from "@/lib/axios.config";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFollowed } from "@/hooks/useFollowed";
 
 const PodcastDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +20,7 @@ const PodcastDetails: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [episodes, setEpisodes] = useState<PodcastEpisode[]>([]);
   const [loadingEpisodes, setLoadingEpisodes] = useState<boolean>(true);
+  const { isFollowed, toggleFollow, loadingIds } = useFollowed();
 
   useEffect(() => {
     let isMounted = true;
@@ -88,8 +92,40 @@ const PodcastDetails: React.FC = () => {
             )}
           </div>
           <div className="mt-4">
-            <Button disabled={loading} className="px-20 rounded-full">
-              Follow
+            <Button
+              disabled={
+                loading ||
+                !feed ||
+                (feed ? !!loadingIds[String(feed.id)] : false)
+              }
+              className="px-20 rounded-full"
+              onClick={async () => {
+                if (!feed) return;
+                const wasFollowed = isFollowed(feed.id);
+                try {
+                  await toggleFollow(feed);
+                  toast.success(
+                    wasFollowed ? "Unfollowed podcast" : "Followed podcast"
+                  );
+                } catch {
+                  toast.error("Action failed. Please try again.");
+                }
+              }}
+            >
+              {feed && loadingIds[String(feed.id)] ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {isFollowed(feed.id) ? "Unfollowing" : "Following"}
+                </span>
+              ) : feed ? (
+                isFollowed(feed.id) ? (
+                  "Unfollow"
+                ) : (
+                  "Follow"
+                )
+              ) : (
+                "Follow"
+              )}
             </Button>
           </div>
         </div>

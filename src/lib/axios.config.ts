@@ -1,5 +1,4 @@
 import axios, { type AxiosInstance } from "axios";
-import type { AuthState } from "@/components/auth-context";
 
 const apiBaseURL =
   "https://hjtrv4juxe.execute-api.us-west-2.amazonaws.com/prod";
@@ -15,16 +14,11 @@ export const apiClient: AxiosInstance = axios.create({
 // Attach Authorization header from localStorage if token exists
 apiClient.interceptors.request.use((config) => {
   try {
-    const raw = localStorage.getItem("podbreaf_auth");
-    if (raw) {
-      const { token } = JSON.parse(raw) as AuthState;
-      if (token) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
-        console.log("Token added to request:", config.url);
-      } else {
-        console.log("No token found in auth state");
-      }
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log("Token added to request:", config.url);
     } else {
       console.log("No auth data found in localStorage");
     }

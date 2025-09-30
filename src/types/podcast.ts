@@ -95,6 +95,7 @@ export type PodcastEpisode = {
   feedDuplicateOf?: number | null;
   chaptersUrl?: string | null;
   transcriptUrl?: string | null;
+  summary_info?: string | null;
 };
 
 export type PodcastEpisodesResponse = {

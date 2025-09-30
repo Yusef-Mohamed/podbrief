@@ -16,8 +16,9 @@ const HomePage: React.FC = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await apiClient.get("/episodes/recent?page=1");
+        const response = await apiClient.get("/episodes/recent?page=1&limit=3");
         const items: PodcastEpisode[] = response.data?.items || [];
+        console.log(items);
         if (mounted) {
           setTopEpisodes(items.slice(0, 3));
         }
@@ -36,7 +37,6 @@ const HomePage: React.FC = () => {
       mounted = false;
     };
   }, []);
-
   const formatSubtitle = (episode: PodcastEpisode) => {
     return episode.feedTitle || "";
   };
@@ -46,7 +46,6 @@ const HomePage: React.FC = () => {
     const minutes = Math.max(1, Math.floor(episode.duration / 60));
     return ` • ${minutes} min`;
   };
-  console.log(topEpisodes);
   return (
     <MainLayout>
       <div className="flex gap-8">

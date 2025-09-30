@@ -1,35 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
-import MainLayout from "./layout/MainLayout";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import type { PodcastEpisode, PodcastFeed } from "@/types/podcast";
-
-type SavedState = {
-  episodes: PodcastEpisode[];
-  podcasts: PodcastFeed[];
-};
-
-const STORAGE_KEY = "podbreaf_library";
+import { useSaved } from "@/contexts/SavedContext";
+import MainLayout from "./layout/MainLayout";
+import { useFollowed } from "@/hooks/useFollowed";
 
 const LibraryPage: React.FC = () => {
-  const [saved, setSaved] = useState<SavedState>({
-    episodes: [],
-    podcasts: [],
-  });
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as SavedState;
-        setSaved({
-          episodes: Array.isArray(parsed.episodes) ? parsed.episodes : [],
-          podcasts: Array.isArray(parsed.podcasts) ? parsed.podcasts : [],
-        });
-      }
-    } catch {
-      // ignore invalid localStorage
-    }
-  }, []);
+  const { episodes } = useSaved();
+  const { followed } = useFollowed();
 
   const prettyDuration = (seconds?: number) => {
     if (!seconds) return "";
@@ -39,7 +16,7 @@ const LibraryPage: React.FC = () => {
     return hours > 0 ? `${hours} hours ${mins} minutes` : `${mins} minutes`;
   };
 
-  const followed = useMemo(() => saved.podcasts.slice(0, 12), [saved]);
+  const followedList = useMemo(() => followed.slice(0, 12), [followed]);
 
   return (
     <MainLayout>
@@ -50,12 +27,12 @@ const LibraryPage: React.FC = () => {
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Saved Episodes</h2>
           <div className="space-y-4">
-            {saved.episodes.length === 0 ? (
+            {episodes.length === 0 ? (
               <div className="text-sm text-muted-foreground">
                 You have no saved episodes yet.
               </div>
             ) : (
-              saved.episodes.map((ep) => (
+              episodes.map((ep) => (
                 <div
                   key={ep.id as React.Key}
                   className="rounded-2xl bg-card border px-4 py-4 sm:px-6 sm:py-5 flex items-center gap-4 shadow-sm"
@@ -95,13 +72,13 @@ const LibraryPage: React.FC = () => {
         {/* Followed Podcasts */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">Followed Podcasts</h2>
-          {followed.length === 0 ? (
+          {followedList.length === 0 ? (
             <div className="text-sm text-muted-foreground">
               You are not following any podcasts yet.
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {followed.map((feed) => (
+              {followedList.map((feed) => (
                 <Link
                   key={feed.id}
                   to={`/podcast/${feed.id}`}

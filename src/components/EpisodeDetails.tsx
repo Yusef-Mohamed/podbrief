@@ -7,12 +7,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import { usePlayer } from "@/contexts/PlayerContext";
+import { useSaved } from "@/contexts/SavedContext";
+import { toast } from "sonner";
 
 const EpisodeDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [episode, setEpisode] = useState<PodcastEpisode | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { playEpisode } = usePlayer();
+  const { isEpisodeSaved, toggleEpisode } = useSaved();
+  const [summaryVisibleCount, setSummaryVisibleCount] = useState<number>(3);
 
   useEffect(() => {
     if (!id) return;
@@ -51,17 +55,33 @@ const EpisodeDetails: React.FC = () => {
     }
   };
 
-  const summaryBullets = useMemo(() => {
-    if (!episode?.description) return [] as string[];
-    // Strip basic HTML tags and split into bullet-like sentences
-    const text = episode.description
-      .replace(/<[^>]*>/g, " ")
-      .replace(/&nbsp;|&amp;|&quot;|&#39;/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    const sentences = text.split(/[.;]\s+/).filter((s) => s.length > 8);
-    return sentences.slice(0, 6);
-  }, [episode?.description]);
+  const handleToggleSave = () => {
+    if (!episode) return;
+    const wasSaved = isEpisodeSaved(episode.id);
+    toggleEpisode(episode);
+    toast.success(wasSaved ? "Episode removed from saved" : "Episode saved");
+  };
+
+  // const summaryBullets = useMemo(() => {
+  //   if (!episode?.description) return [] as string[];
+  //   // Strip basic HTML tags and split into bullet-like sentences
+  //   const text = episode.description
+  //     .replace(/<[^>]*>/g, " ")
+  //     .replace(/&nbsp;|&amp;|&quot;|&#39;/g, " ")
+  //     .replace(/\s+/g, " ")
+  //     .trim();
+  //   const sentences = text.split(/[.;]\s+/).filter((s) => s.length > 8);
+  //   return sentences.slice(0, 6);
+  // }, [episode?.description]);
+
+  // Dummy summary bullets (temporary)
+  const dummyBullets: string[] = [
+    "This is a placeholder summary for the episode.",
+    "Second bullet with dummy highlight text.",
+    "Third item summarizing key point while real summary is hidden.",
+    "Fourth placeholder detail expanding on the discussion topic.",
+    "Fifth note offering another highlight from the episode.",
+  ];
 
   return (
     <MainLayout>
@@ -116,13 +136,33 @@ const EpisodeDetails: React.FC = () => {
                 <Skeleton className="h-4 w-5/6" />
               </div>
             ) : (
-              <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
-                {summaryBullets.length > 0 ? (
-                  summaryBullets.map((line, idx) => <li key={idx}>{line}</li>)
-                ) : (
-                  <li>No summary available for this episode.</li>
+              <>
+                <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
+                  {dummyBullets
+                    .slice(0, summaryVisibleCount)
+                    .map((line, idx) => (
+                      <li key={idx}>{line}</li>
+                    ))}
+                </ul>
+                {summaryVisibleCount < Math.min(5, dummyBullets.length) && (
+                  <button
+                    className="mt-2 text-xs underline text-muted-foreground"
+                    onClick={() => setSummaryVisibleCount(5)}
+                  >
+                    See more
+                  </button>
                 )}
-              </ul>
+                {/**
+                 * Original summary rendering (hidden for now):
+                 * <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
+                 *   {summaryBullets.length > 0 ? (
+                 *     summaryBullets.map((line, idx) => <li key={idx}>{line}</li>)
+                 *   ) : (
+                 *     <li>No summary available for this episode.</li>
+                 *   )}
+                 * </ul>
+                 */}
+              </>
             )}
           </div>
 
@@ -141,7 +181,15 @@ const EpisodeDetails: React.FC = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <Button className="gap-2">Save Episode</Button>
+          <Button
+            className="gap-2"
+            onClick={handleToggleSave}
+            disabled={!episode}
+          >
+            {episode && isEpisodeSaved(episode.id)
+              ? "Unsave Episode"
+              : "Save Episode"}
+          </Button>
           <Button variant="outline" className="gap-2">
             Share
           </Button>
